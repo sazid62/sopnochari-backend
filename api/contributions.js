@@ -1,43 +1,45 @@
-import express from "express";
-import { getContributionsCollection, connectDB } from "../config/db.js";
+import { connectToDatabase } from "../config/db.js";
 
-const router = express.Router();
-
-// GET contributions
-router.get("/", async (req, res) => {
-  try {
-    const collection = await connectDB();
-    const contributions = await collection.find({}).toArray();
-    res.status(200).json(contributions);
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching contributions", error: err.message });
+export const config = {
+  api: {
+    bodyParser: true
   }
-});
+};
 
-// POST contribution
-router.post("/", async (req, res) => {
+export default async function handler(req, res) {
   try {
-    const newContribution = req.body;
-    const collection = await connectDB();
+    const { db } = await connectToDatabase();
+    const collection = db.collection("contributions");
 
-    const requiredFields = [
-      "date","recipient","sender","amount","method",
-      "from","to","txn_id","note","sender_proof","recvr_proof"
-    ];
+    if (req.method === "GET") {
+      const contributions = await collection.find({}).toArray();
+      return res.status(200).json(contributions);
+    }
 
-    const missingFields = requiredFields.filter(f => !newContribution[f]);
-    if (missingFields.length > 0) return res.status(400).json({ message: "Missing fields", missing: missingFields });
+    if (req.method === "POST") {
+      const data = req.body;
 
-    if (typeof newContribution.amount !== "number")
-      return res.status(400).json({ message: "Amount must be a number" });
+      // Basic validation
+      const requiredFields = [
+        "date","recipient","sender","amount","method",
+        "from","to","txn_id","note","sender_proof","recvr_proof"
+      ];
 
-    const result = await collection.insertOne(newContribution);
-    const insertedDoc = await collection.findOne({ _id: result.insertedId });
+      const missingFields = requiredFields.filter(f => !data[f]);
+      if (missingFields.length > 0)
+        return res.status(400).json({ message: "Missing fields", missing: missingFields });
 
-    res.status(201).json({ message: "Contribution added", contribution: insertedDoc });
+      if (typeof data.amount !== "number")
+        return res.status(400).json({ message: "Amount must be a number" });
+
+      const result = await collection.insertOne(data);
+      return res.status(201).json({ message: "Contribution added", contribution: result });
+    }
+
+    res.setHeader("Allow", ["GET", "POST"]);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
+
   } catch (err) {
-    res.status(500).json({ message: "Error inserting contribution", error: err.message });
+    res.status(500).json({ message: err.message });
   }
-});
-
-export default router;
+}

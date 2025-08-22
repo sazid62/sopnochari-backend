@@ -1,19 +1,23 @@
 import { MongoClient } from "mongodb";
 
-let contributionsCollection;
+let cachedClient = null;
+let cachedDb = null;
 
-export async function connectDB() {
-  if (!contributionsCollection) {
-    const client = new MongoClient(process.env.MONGO_URI);
-    await client.connect();
-    const db = client.db("sopnochari");
-    contributionsCollection = db.collection("contributions");
-    console.log("✅ MongoDB connected");
+export async function connectToDatabase() {
+  if (cachedClient && cachedDb) return { client: cachedClient, db: cachedDb };
+
+  if (!process.env.MONGO_URI) {
+    throw new Error("MONGO_URI is not defined in environment");
   }
-  return contributionsCollection;
-}
 
-export function getContributionsCollection() {
-  if (!contributionsCollection) throw new Error("DB not connected");
-  return contributionsCollection;
+  const client = new MongoClient(process.env.MONGO_URI);
+  await client.connect();
+  const db = client.db("sopnochari");
+
+  cachedClient = client;
+  cachedDb = db;
+
+  console.log("✅ MongoDB connected");
+
+  return { client, db };
 }

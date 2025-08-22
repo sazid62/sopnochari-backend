@@ -1,11 +1,16 @@
-import express from "express";
 import formidable from "formidable";
 import fs from "fs";
 import { google } from "googleapis";
 
-const router = express.Router();
+export const config = {
+  api: {
+    bodyParser: false
+  }
+};
 
-router.post("/", (req, res) => {
+export default async function handler(req, res) {
+  if (req.method !== "POST") return res.status(405).send("Only POST allowed");
+
   const form = formidable({ multiples: false });
 
   form.parse(req, async (err, fields, files) => {
@@ -13,7 +18,6 @@ router.post("/", (req, res) => {
 
     const file = files.file;
     const filePath = file?.filepath || (Array.isArray(file) ? file[0]?.filepath : null);
-
     if (!filePath) return res.status(400).send("File path not found");
 
     const filename = fields.filename || file.originalFilename || file[0]?.originalFilename;
@@ -31,13 +35,13 @@ router.post("/", (req, res) => {
       const response = await drive.files.create({
         requestBody: {
           name: filename,
-          parents: [process.env.DRIVE_FOLDER_ID],
+          parents: [process.env.DRIVE_FOLDER_ID]
         },
         media: {
           mimeType: file.mimetype || file[0]?.mimetype,
-          body: fs.createReadStream(filePath),
+          body: fs.createReadStream(filePath)
         },
-        fields: "id, webViewLink",
+        fields: "id, webViewLink"
       });
 
       fs.unlinkSync(filePath);
@@ -48,6 +52,4 @@ router.post("/", (req, res) => {
       res.status(500).send("Upload failed");
     }
   });
-});
-
-export default router;
+}

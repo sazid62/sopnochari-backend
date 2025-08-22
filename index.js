@@ -7,7 +7,10 @@ import cors from "cors";
 import uploadRoutes from "./api/upload.js";
 import contributionRoutes from "./api/contributions.js";
 
-import { connectDB } from "./config/db.js";
+import { connectToDatabase } from "./config/db.js";
+
+// Connect DB
+await connectToDatabase();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -25,8 +28,7 @@ app.use(
   })
 );
 
-// Connect DB
-await connectDB();
+ 
 
 // Routes
 app.use("/api/upload", uploadRoutes);
