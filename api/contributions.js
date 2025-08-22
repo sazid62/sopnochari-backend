@@ -7,6 +7,16 @@ export const config = {
 };
 
 export default async function handler(req, res) {
+  // Handle CORS preflight
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    // Return early for preflight requests
+    return res.status(204).end();
+  }
+
   try {
     const { db } = await connectToDatabase();
     const collection = db.collection("contributions");
@@ -38,7 +48,6 @@ export default async function handler(req, res) {
 
     res.setHeader("Allow", ["GET", "POST"]);
     res.status(405).end(`Method ${req.method} Not Allowed`);
-
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
