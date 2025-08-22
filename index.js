@@ -4,8 +4,8 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 
-import uploadRoutes from "./upload.js";
-import contributionRoutes from "./contributions.js";
+import uploadRoutes from "./api/upload.js";
+import contributionRoutes from "./api/contributions.js";
 
 import { connectDB } from "./config/db.js";
 

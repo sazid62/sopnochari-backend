@@ -1,5 +1,5 @@
 import express from "express";
-import { getContributionsCollection, connectDB } from "./config/db.js";
+import { getContributionsCollection, connectDB } from "../config/db.js";
 
 const router = express.Router();
 
