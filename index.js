@@ -6,7 +6,7 @@ import cors from "cors";
 
 import uploadRoutes from "./api/upload.js";
 import contributionRoutes from "./api/contributions.js";
-import allPersonRoutes from "./api/person.js"
+import personRoutes from "./api/person.js"
 
 import { connectToDatabase } from "./config/db.js";
 
@@ -34,10 +34,11 @@ app.use(
 // Routes
 app.use("/api/upload", uploadRoutes);
 app.use("/api/contributions", contributionRoutes);
-app.use("/api/person", allPersonRoutes)
-app.use(("/"), (req, res) => {
+app.use("/api/person", personRoutes)
+app.get("/", (req, res) => {
   res.status(200).json({ message: "Welcome to Sopnochari API" });
 });
+
 
 // Start server
 app.listen(PORT, () =>
