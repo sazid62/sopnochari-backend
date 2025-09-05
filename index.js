@@ -6,7 +6,7 @@ import cors from "cors";
 
 import uploadRoutes from "./api/upload.js";
 import contributionRoutes from "./api/contributions.js";
-import allPersonRoutes from "./api/allperson.js"
+import allPersonRoutes from "./api/person.js"
 
 import { connectToDatabase } from "./config/db.js";
 
